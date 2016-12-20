@@ -103,7 +103,7 @@ try:
 			clearConsole()
 			cmd = 'pdflatex "' + TEX_FILE + '"'
 			if lastMd5 is None:
-				print(C_INFO + "[info]" + C_RESET + " first compilation: " + cmd + " ...")
+				print(C_INFO + "[info]" + C_RESET + " compiling: " + cmd + " ...")
 			else:
 				print(C_INFO + "[info]" + C_RESET + " file "+TEX_FILE+" changed, recompiling: " + cmd + " ...")
 
@@ -111,7 +111,7 @@ try:
 
 			shellExec(cmd)
 
-			print(C_INFO + "[info]" + C_RESET + " " +TEX_FILE+" generated.")
+			print(C_INFO + "[info]" + C_RESET + " " +TEX_FILE+" compiled.")
 
 			lastMd5 = currentMd5
 
