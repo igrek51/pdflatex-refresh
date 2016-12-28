@@ -7,14 +7,47 @@ import subprocess
 import time
 import hashlib
 
+# Znaki formatowania tekstu
+C_RESET = '\033[0m'
+C_BOLD = '\033[1m'
+C_DIM = '\033[2m'
+C_ITALIC = '\033[3m'
+C_UNDERLINE = '\033[4m'
+
+C_BLACK = 0
+C_RED = 1
+C_GREEN = 2
+C_YELLOW = 3
+C_BLUE = 4
+C_MAGENTA = 5
+C_CYAN = 6
+C_WHITE = 7
+
+def textColor(colorNumber):
+	return '\033[%dm' % (30 + colorNumber)
+
+C_INFO = textColor(C_BLUE) + C_BOLD
+C_ERROR = textColor(C_RED) + C_BOLD
+T_INFO = C_INFO + '[info]' + C_RESET
+T_ERROR = C_ERROR + '[ERROR]' + C_RESET
+
+def info(message):
+	print(T_INFO + " " + message)
+
+def error(message):
+	print(T_ERROR + " " + message)
+
+def fatalError(message):
+	error(message)
+	sys.exit()
+
 def shellExec(cmd):
 	errCode = subprocess.call(cmd, shell=True)
 	if errCode != 0:
 		fatalError('failed executing: %s' % cmd)
 
-def fatalError(message):
-	print('[ERROR] %s' % message)
-	sys.exit()
+def shellExecErrorCode(cmd):
+	return subprocess.call(cmd, shell=True)
 
 def popArg(argsDict):
 	args = argsDict['args']
@@ -48,28 +81,6 @@ def saveFile(filename, content):
 	f.write(bytes(content, 'utf-8'))
 	f.close()
 
-def textColor(colorNumber):
-	return '\033[%dm' % (30 + colorNumber)
-
-# Znaki formatowania tekstu
-C_RESET = '\033[0m'
-C_BOLD = '\033[1m'
-C_DIM = '\033[2m'
-C_ITALIC = '\033[3m'
-C_UNDERLINE = '\033[4m'
-
-C_BLACK = 0
-C_RED = 1
-C_GREEN = 2
-C_YELLOW = 3
-C_BLUE = 4
-C_MAGENTA = 5
-C_CYAN = 6
-C_WHITE = 7
-
-C_INFO = textColor(C_BLUE) + C_BOLD
-
-
 interval = 1
 TEX_FILE = None
 lastMd5 = None
@@ -88,6 +99,8 @@ while len(argsDict['args']) > 0:
 		intervalStr = popArg(argsDict)
 		interval = int(intervalStr)
 	else:
+		if len(argsDict['args']) > 0:
+			fatalError('too many command line arguments')
 		TEX_FILE = arg
 
 if TEX_FILE is None:
@@ -101,17 +114,19 @@ try:
 		# zmiana w pliku (lub pierwsze uruchomienie) - wykonanie kompilacji
 		if lastMd5 is None or lastMd5 != currentMd5:
 			clearConsole()
-			cmd = 'pdflatex "' + TEX_FILE + '"'
+			cmd = 'pdflatex -interaction nonstopmode -halt-on-error -file-line-error "' + TEX_FILE + '"'
 			if lastMd5 is None:
-				print(C_INFO + "[info]" + C_RESET + " compiling: " + cmd + " ...")
+				info("compiling: " + cmd + " ...")
 			else:
-				print(C_INFO + "[info]" + C_RESET + " file "+TEX_FILE+" changed, recompiling: " + cmd + " ...")
+				info("file "+TEX_FILE+" changed, recompiling: " + cmd + " ...")
 
 			# TODO czyszczenie pozostałych plików śmieciowych uniemożliwiających zbudowanie
 
-			shellExec(cmd)
-
-			print(C_INFO + "[info]" + C_RESET + " " +TEX_FILE+" compiled.")
+			errCode = shellExecErrorCode(cmd)
+			if errCode == 0:
+				info(TEX_FILE+' compiled.')
+			else:
+				error(TEX_FILE + ' compilation failed.')
 
 			lastMd5 = currentMd5
 
