@@ -27,12 +27,17 @@ def textColor(colorNumber):
 	return '\033[%dm' % (30 + colorNumber)
 
 C_INFO = textColor(C_BLUE) + C_BOLD
+C_OK = textColor(C_GREEN) + C_BOLD
 C_ERROR = textColor(C_RED) + C_BOLD
 T_INFO = C_INFO + '[info]' + C_RESET
+T_OK = C_OK + '[OK]' + C_RESET
 T_ERROR = C_ERROR + '[ERROR]' + C_RESET
 
 def info(message):
 	print(T_INFO + " " + message)
+
+def ok(message):
+	print(T_OK + " " + message)
 
 def error(message):
 	print(T_ERROR + " " + message)
@@ -124,7 +129,7 @@ try:
 
 			errCode = shellExecErrorCode(cmd)
 			if errCode == 0:
-				info(TEX_FILE+' compiled.')
+				ok(TEX_FILE+' compiled.')
 			else:
 				error(TEX_FILE + ' compilation failed.')
 
