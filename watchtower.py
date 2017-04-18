@@ -7,6 +7,8 @@ Author: igrek51
 License: Beerware
 """
 
+# TODO -x - excluding mask (folders)
+
 import sys
 import os
 import subprocess
@@ -132,9 +134,11 @@ Usage:
  %s [options] -f '<files>' [...] -e <command>
 
 Options:
- -f, --files <file1> [<file2>] ['<pattern1>'] [...]\tmonitor single file, \
-multiple files or shell-style wildcard patterns
+ -f, --files <file1> [<file2>] ['<pattern1>'] [...]\tinclude masks - filenames \
+or shell-style wildcard patterns
   example patterns: file1, 'dir1/*', "*.tex", 'dir2/*.py', "*"
+ -x, --exclude <file1> [<file2>] ['<pattern1>'] [...]\texclude masks - filenames \
+or shell-style wildcard patterns not to be observed
  -e, --exec <command>\texecute given command when any change is detected
  -i, --interval <seconds>\tset interval between subsequent changes checks \
 (default 1 s)
@@ -166,6 +170,7 @@ class Main:
         self.interval = 1  # seconds between subsequent changes checks
         self.executeCmd = None
         self.filePatterns = []
+        self.excludePatterns = []
         self.observedFiles = []
         self.recursive = True
 
@@ -215,6 +220,19 @@ class Main:
                     break
                 (pattern, args) = popArg(args)
                 self.filePatterns.append(pattern)
+        # excluded files
+        elif arg == '-x' or arg == '--exclude':
+            if nextArg(args) is None:
+                fatalError('no file patterns specified')
+            '''read params until there is no param'''
+            ''' or param is from another option group'''
+            while True:
+                nextA = nextArg(args)  # just read next param, do not pop
+                # if param is from another group
+                if nextA is None or nextA.startswith('-'):
+                    break
+                (pattern, args) = popArg(args)
+                self.excludePatterns.append(pattern)
         else:
             fatalError('invalid parameter: %s' % arg)
         return args
@@ -235,12 +253,12 @@ class Main:
                 # cut './' from the beginning
                 if filePath.startswith('./'):
                     filePath = filePath[2:]
-                # check if file path is matching any pattern
-                for pattern in self.filePatterns:
-                    if fnmatch.fnmatch(filePath, pattern):
+                # check if file path is matching any including pattern
+                if self._isMatchingAnyPattern(filePath, self.filePatterns):
+                    # and is not matching any excluding pattern
+                    if not self._isMatchingAnyPattern(filePath, self.excludePatterns):
                         # add only if not present already
                         filePaths.add(filePath)
-                        break
 
         # create list of unique observed files
         for filePath in filePaths:
@@ -248,6 +266,12 @@ class Main:
         # validate found files
         if not self.observedFiles:
             fatalError('no matching file found for specified patterns')
+
+    def _isMatchingAnyPattern(self, filename, patterns):
+        for pattern in patterns:
+            if fnmatch.fnmatch(filename, pattern):
+                return True
+        return False
 
     def _lookForChanges(self):
         try:
