@@ -1,7 +1,7 @@
 #!/usr/bin/python2
 # -*- coding: utf-8 -*-
 """
-watchtower - script looking for a file changes and executing actions.
+watchtower - Tool for monitoring the changes in multiple files and executing action.
 
 Author: igrek51
 License: Beerware
@@ -127,18 +127,18 @@ def checksumFile(filename):
 
 def printHelp():
     """Print help message."""
-    print("""Monitor multiple files looking for a content change. \
-When any change is detected execute given command.
+    print("""Tool for monitoring the changes in multiple files. \
+When any change is detected a given command is executed.
 
 Usage:
  %s [options] -f '<files>' [...] -e <command>
 
 Options:
  -f, --files <file1> [<file2>] ['<pattern1>'] [...]\tinclude masks - filenames \
-or shell-style wildcard patterns
+or shell-style wildcard patterns, which contains files to be observed
   example patterns: file1, 'dir1/*', "*.tex", 'dir2/*.py', "*"
  -x, --exclude <file1> [<file2>] ['<pattern1>'] [...]\texclude masks - filenames \
-or shell-style wildcard patterns not to be observed
+or shell-style wildcard patterns, which contains files not to be observed
  -e, --exec <command>\texecute given command when any change is detected
  -i, --interval <seconds>\tset interval between subsequent changes checks \
 (default 1 s)
@@ -207,7 +207,7 @@ class Main:
             # pop all args
             self.executeCmd = ' '.join(args)
             args = []
-        # select files to monitor
+        # select files to observe
         elif arg == '-f' or arg == '--files':
             if nextArg(args) is None:
                 fatalError('no file patterns specified')

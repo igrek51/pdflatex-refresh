@@ -1,5 +1,11 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
+"""
+pdflatex-refresh - tool for autogenerating PDF documents in background while editing LaTeX files
+
+Author: igrek51
+License: Beerware
+"""
 
 import sys
 import os
