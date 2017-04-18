@@ -125,8 +125,8 @@ def checksumFile(filename):
 
 def printHelp():
     """Print help message."""
-    print("""Monitors multiple files looking for a content change. \
-When any change is detected executes given command.
+    print("""Monitor multiple files looking for a content change. \
+When any change is detected execute given command.
 
 Usage:
  %s [options] -f '<files>' [...] -e <command>
